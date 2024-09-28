@@ -18,12 +18,6 @@ class Homepage extends StatelessWidget {
         backgroundColor: Color.fromARGB(255, 254, 247, 255), // Updated AppBar background
         elevation: 0,
         leading: Icon(Icons.search, color: Colors.black),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.person, color: Color(0xFF21005d)), // Profile icon on the AppBar
-            onPressed: () {},
-          ),
-        ],
         title: Text(
           "Vital Step",
           style: TextStyle(color: Colors.black),
@@ -59,7 +53,7 @@ class Homepage extends StatelessWidget {
                   ),
                   SizedBox(height: 10),
                   Text(
-                    "Hi. Operator's Name",
+                    "Hi Specialist Name",
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
                   ),
                   SizedBox(height: 10),
@@ -123,30 +117,46 @@ class Homepage extends StatelessWidget {
 
   // Method to show the Add Patient dialog
   void _showAddPatientDialog(BuildContext context) {
-    TextEditingController _patientNameController = TextEditingController();
+    TextEditingController _patientEmailController = TextEditingController();
+    TextEditingController _patientAccessCodeController = TextEditingController();
 
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text("Add Patient"),
-          content: TextField(
-            controller: _patientNameController,
-            decoration: InputDecoration(
-              labelText: "Patient access code",
-            ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Patient Email TextField
+              TextField(
+                controller: _patientEmailController,
+                decoration: InputDecoration(
+                  labelText: "Patient Email",
+                ),
+              ),
+              SizedBox(height: 10), // Add spacing between fields
+              // Patient Access Code TextField
+              TextField(
+                controller: _patientAccessCodeController,
+                decoration: InputDecoration(
+                  labelText: "Patient Access Code",
+                ),
+              ),
+            ],
           ),
           actions: [
             TextButton(
               onPressed: () {
-                if (_patientNameController.text.isNotEmpty) {
-                  // Add patient to the list (for now, printing it)
-                  print("New patient: ${_patientNameController.text}");
+                if (_patientEmailController.text.isNotEmpty && _patientAccessCodeController.text.isNotEmpty) {
+                  // Add patient details (for now, printing them)
+                  print("New patient email: ${_patientEmailController.text}");
+                  print("New patient access code: ${_patientAccessCodeController.text}");
                   // Close dialog
                   Navigator.of(context).pop();
                 }
               },
-              child: Text("Add"),
+              child: Text("Create"),
             ),
             TextButton(
               onPressed: () {
@@ -160,4 +170,3 @@ class Homepage extends StatelessWidget {
     );
   }
 }
-

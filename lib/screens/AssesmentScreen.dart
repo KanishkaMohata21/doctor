@@ -1,7 +1,7 @@
+import 'package:doctor/screens/AssesmentDetailsScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:doctor/screens/TestPage.dart';
-import 'package:doctor/screens/Devices.dart'; // Import other required screens
-import 'package:doctor/screens/AssesmentDetailsScreen.dart'; // Import other required screens
+import 'package:doctor/screens/Devices.dart';
 import 'package:doctor/widgets/bottomNavigationBar.dart';
 
 class AssessmentPage extends StatefulWidget {
@@ -10,7 +10,7 @@ class AssessmentPage extends StatefulWidget {
 }
 
 class _AssessmentPageState extends State<AssessmentPage> {
-  int _selectedIndex = 0; // Default index for the navigation bar
+  int _selectedIndex = 0;
 
   // Handle navigation bar tap
   void _handleNavigation(int index) {
@@ -22,12 +22,12 @@ class _AssessmentPageState extends State<AssessmentPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // Background of the whole page
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Color.fromARGB(255, 254, 247, 255), // AppBar background
+        backgroundColor: Color.fromARGB(255, 254, 247, 255),
         elevation: 0,
         title: Padding(
-          padding: const EdgeInsets.only(left: 4), // Add padding here
+          padding: const EdgeInsets.only(left: 4),
           child: Text(
             'Assessment',
             style: TextStyle(color: Colors.black),
@@ -35,9 +35,8 @@ class _AssessmentPageState extends State<AssessmentPage> {
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.devices, color: Colors.black), // Use devices icon for computer/mobile
+            icon: Icon(Icons.devices, color: Colors.black),
             onPressed: () {
-              // Navigate to DeviceScreen on icon click
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -51,28 +50,35 @@ class _AssessmentPageState extends State<AssessmentPage> {
       body: Stack(
         children: [
           Container(
-            color: Color.fromARGB(255, 248, 247, 252), // Background of content area
+            color: Color.fromARGB(255, 248, 247, 252),
             padding: const EdgeInsets.all(16.0),
-            child: ListView.builder(
-              itemCount: assessments.length,
-              itemBuilder: (context, index) {
-                return GestureDetector(
-                  onTap: () {
-                    // Navigate to AssessmentDetailsPage on tap
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AssessmentDetailPage(),
-                      ),
-                    );
-                  },
-                  child: AssessmentTile(
-                    number: index + 1,
-                    title: assessments[index]['title']!,
-                    details: assessments[index]['details']!,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Patient name and contact
+                Text(
+                  "Patient Name",
+                  style: TextStyle(fontSize: 18),
+                ),
+                SizedBox(height: 16),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: assessments.length,
+                    itemBuilder: (context, index) {
+                      return AssessmentTile(
+                        number: index + 1,
+                        title: assessments[index]['title']!,
+                        details: assessments[index]['details']!,
+                        onDelete: () {
+                          setState(() {
+                            assessments.removeAt(index);
+                          });
+                        },
+                      );
+                    },
                   ),
-                );
-              },
+                ),
+              ],
             ),
           ),
           Positioned(
@@ -80,9 +86,30 @@ class _AssessmentPageState extends State<AssessmentPage> {
             left: 0,
             right: 0,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0), // Add padding along the x-axis
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
                 children: [
+                  // User Details Button
+                  SizedBox(
+                    height: 50,
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        _showUserDetailsDialog(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFF0101D3),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                      child: Text(
+                        'User Details',
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 8),
                   // Create Assessment Button
                   SizedBox(
                     height: 50,
@@ -92,9 +119,9 @@ class _AssessmentPageState extends State<AssessmentPage> {
                         _showCreateAssessmentDialog(context);
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color.fromARGB(255, 46, 39, 179), // Blue button color
+                        backgroundColor: Color.fromARGB(255, 46, 39, 179),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0), // Rounded corners
+                          borderRadius: BorderRadius.circular(8.0),
                         ),
                       ),
                       child: Text(
@@ -103,25 +130,25 @@ class _AssessmentPageState extends State<AssessmentPage> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 8), // Add vertical gap between buttons
+                  SizedBox(height: 8),
                   // Delete User Button
                   SizedBox(
                     height: 50,
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        // Handle the delete user action
                         showDialog(
                           context: context,
                           builder: (BuildContext context) {
                             return AlertDialog(
                               title: Text("Confirm Deletion"),
-                              content: Text("Are you sure you want to delete the user?"),
+                              content:
+                                  Text("Are you sure you want to delete the user?"),
                               actions: [
                                 TextButton(
                                   onPressed: () {
                                     Navigator.of(context).pop();
-                                    // Add your delete user logic here
+                                    // Add delete user logic here
                                   },
                                   child: Text("Yes"),
                                 ),
@@ -137,9 +164,9 @@ class _AssessmentPageState extends State<AssessmentPage> {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red, // Button color
+                        backgroundColor: Colors.red,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0), // Rounded corners
+                          borderRadius: BorderRadius.circular(8.0),
                         ),
                         minimumSize: Size(double.infinity, 50),
                       ),
@@ -169,10 +196,7 @@ class _AssessmentPageState extends State<AssessmentPage> {
     String? selectedPosture;
     String? selectedAssessmentType;
 
-    // Posture options
     final List<String> postures = ['Sitting', 'Standing', 'Lying Down'];
-
-    // Assessment Type options
     final List<String> assessmentTypes = ['Weekly', 'Monthly', 'Daily'];
 
     showDialog(
@@ -183,7 +207,6 @@ class _AssessmentPageState extends State<AssessmentPage> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Posture Dropdown
               DropdownButtonFormField<String>(
                 value: selectedPosture,
                 decoration: InputDecoration(labelText: "Posture"),
@@ -199,8 +222,7 @@ class _AssessmentPageState extends State<AssessmentPage> {
                   });
                 },
               ),
-              SizedBox(height: 16), // Spacing between dropdowns
-              // Assessment Type Dropdown
+              SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 value: selectedAssessmentType,
                 decoration: InputDecoration(labelText: "Assessment Type"),
@@ -242,17 +264,39 @@ class _AssessmentPageState extends State<AssessmentPage> {
       },
     );
   }
+
+  void _showUserDetailsDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("User Details"),
+          content: Text("Name: John Doe\nContact: +1 234 567 890"),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("Close"),
+            ),
+          ],
+        );
+      },
+    );
+  }
 }
 
 class AssessmentTile extends StatefulWidget {
   final int number;
   final String title;
   final String details;
+  final VoidCallback onDelete;
 
   AssessmentTile({
     required this.number,
     required this.title,
     required this.details,
+    required this.onDelete,
   });
 
   @override
@@ -264,16 +308,31 @@ class _AssessmentTileState extends State<AssessmentTile> {
   Widget build(BuildContext context) {
     return Card(
       margin: EdgeInsets.only(bottom: 16),
-      child: ListTile(
-        leading: Text(
-          '${widget.number}',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      child: InkWell(
+        onTap: () {
+          // Navigate to AssesmentDetailsScreen when the card is clicked
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AssessmentDetailPage(),
+            ),
+          );
+        },
+        child: ListTile(
+          leading: Text(
+            '${widget.number}',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          title: Text(
+            widget.title,
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          subtitle: Text(widget.details),
+          trailing: IconButton(
+            icon: Icon(Icons.delete, color: Colors.red),
+            onPressed: widget.onDelete, // Trigger delete callback
+          ),
         ),
-        title: Text(
-          widget.title,
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Text(widget.details),
       ),
     );
   }

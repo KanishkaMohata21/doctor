@@ -1,3 +1,5 @@
+import 'package:doctor/screens/ApprovalScreen.dart';
+import 'package:doctor/screens/ForgotPassword.dart';
 import 'package:doctor/screens/SignUpScreen.dart';
 import 'package:flutter/material.dart';
 
@@ -16,8 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.only(
-          top: 50,    // Padding for the top
-          bottom: 20, // Padding for the bottom
+          top: 30,
           left: 12,   // Padding for the left
           right: 12,  // Padding for the right
         ),
@@ -75,7 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 });
               },
             ),
-                        SizedBox(height: 20),
+            SizedBox(height: 20),
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
@@ -157,7 +158,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 Text('Forgot Password ? '),
                 GestureDetector(
                   onTap: () {
-                    // Handle reset password action
+                    // Navigate to ForgotPasswordPage
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ForgotPasswordPage()),
+                    );
                   },
                   child: Text(
                     'Reset Password',
@@ -191,6 +196,25 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ],
+            ),
+            SizedBox(height: 8),
+            Center(
+              // Centering the request text
+              child: GestureDetector(
+                onTap: () {
+                  // Navigate to RequestPage
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ApprovalScreen()),
+                  );
+                },
+                child: Text(
+                  'Request for Specialist Signup',
+                  style: TextStyle(
+                    color: Color.fromRGBO(44, 40, 177, 1), // Text color for request signup
+                  ),
+                ),
+              ),
             ),
           ],
         ),
