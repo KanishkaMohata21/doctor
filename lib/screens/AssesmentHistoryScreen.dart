@@ -1,10 +1,10 @@
 import 'dart:typed_data';
-import 'dart:ui';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:pdf/pdf.dart';
@@ -14,7 +14,8 @@ class AssessmentHistoryPage extends StatefulWidget {
   _AssessmentHistoryPageState createState() => _AssessmentHistoryPageState();
 }
 
-class _AssessmentHistoryPageState extends State<AssessmentHistoryPage> with SingleTickerProviderStateMixin {
+class _AssessmentHistoryPageState extends State<AssessmentHistoryPage>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final GlobalKey _graph1Key = GlobalKey();
   final GlobalKey _graph2Key = GlobalKey();
@@ -34,74 +35,181 @@ class _AssessmentHistoryPageState extends State<AssessmentHistoryPage> with Sing
   Future<void> _generatePdf() async {
     final pdf = pw.Document();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final tableImage = await _captureWidgetAsImage(_graph1Key);
-      final graphImage = await _captureWidgetAsImage(_graph2Key);
-      pdf.addPage(
-        pw.Page(
-          build: (pw.Context context) => pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Text("Assessment History", style: const pw.TextStyle(fontSize: 24)),
-              pw.SizedBox(height: 20),
+    // Define your custom blue color
+    final customBlue = PdfColor.fromInt(0xFFBCD5DF);
 
-              // Dummy data for the PDF
-              pw.Text("User: John Doe", style: const pw.TextStyle(fontSize: 18)),
-              pw.Text("Assessment: Hand Strength Test", style: const pw.TextStyle(fontSize: 18)),
-              pw.Text("Time: 14:30", style: const pw.TextStyle(fontSize: 18)),
-              pw.Text("Date: 2024-09-24", style: const pw.TextStyle(fontSize: 18)),
-              pw.SizedBox(height: 20),
+    // Load the logo image
+    final logoImage = await imageFromAssetBundle('assets/images/logo.jpeg');
 
-              pw.Text("Right Hand Table", style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
-              pw.Table.fromTextArray(
-                headers: ["ID", "Trial 1 (Kg)", "Trial 2 (Kg)"],
-                data: [
-                  ["58", "1.497", "5.401"],
-                ],
+    // Use a delay to ensure widgets are fully rendered
+    await Future.delayed(Duration(milliseconds: 500));
+
+    // Capture the widget images
+    final tableImage = await _captureWidgetAsImage(_graph1Key);
+    final graphImage = await _captureWidgetAsImage(_graph2Key);
+
+    // Check if the images are null and handle it gracefully
+    if (tableImage == null || graphImage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error capturing graphs. Please try again.')),
+      );
+      return; // Exit if images cannot be captured
+    }
+
+    // First page - All the tables
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+// Logo and Title Section
+            if (logoImage != null)
+              pw.Center(
+                child: pw.Image(
+                  pw.MemoryImage(logoImage),
+                  width: 80,
+                  height: 80,
+                ),
+              ), // Insert logo here
+            pw.SizedBox(height: 10),
+            pw.Center(
+              child: pw.Text(
+                "VITAL STEP",
+                style:
+                    pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold),
+                textAlign: pw.TextAlign.center, // Center text
               ),
-              pw.SizedBox(height: 20),
-
-              pw.Text("Left Hand Table", style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
-              pw.Table.fromTextArray(
-                headers: ["ID", "Trial 1 (Kg)", "Trial 2 (Kg)"],
-                data: [
-                  ["60", "3.230", "2.337"],
-                  ["56", "1.670", "1.646"],
-                ],
+            ),
+            pw.SizedBox(height: 10),
+            pw.Center(
+              child: pw.Text(
+                "ASSESSMENT HISTORY",
+                style:
+                    pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold),
+                textAlign: pw.TextAlign.center, // Center text
               ),
-              pw.SizedBox(height: 20),
+            ),
+            pw.SizedBox(height: 20),
 
-              pw.Text("Latest Test", style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
-              pw.Table.fromTextArray(
-                headers: ["RH", "LH", "Difference"],
-                data: [
-                  ["3.93", "2.38", "-1.55"],
-                ],
+            // Rest of the content (tables, graphs, etc.)
+            pw.TableHelper.fromTextArray(
+              headers: ["Patient's Detail", ""],
+              data: [
+                ["Patient's Name", "John Doe"],
+                ["Assessment", "Hand Strength Test"],
+                ["Date", "2024-09-24"],
+                ["Time", "14:30"],
+              ],
+            ),
+
+                        pw.SizedBox(height: 20),
+            // Right Hand Table
+            pw.Text("1. Right hand Table",
+                style:
+                    pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+            pw.TableHelper.fromTextArray(
+              headers: [
+                "ID",
+                "Date",
+                "Trial 1 (Kg)",
+                "Trial 2 (Kg)",
+                "Trial 3 (Kg)",
+                "Average"
+              ],
+              data: [
+                ["58", "2024-09-23", "1.497", "5.401", "-", "3.449"],
+              ],
+              headerDecoration: pw.BoxDecoration(
+                color: customBlue, // Custom blue background for header
               ),
-              pw.SizedBox(height: 20),
+              border: pw.TableBorder.all(width: 1, color: PdfColors.black),
+            ),
+            pw.SizedBox(height: 20),
 
-              pw.Text("Right Hand Graph", style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
-              if (tableImage != null) pw.Image(pw.MemoryImage(tableImage), width: double.infinity, height: 100),
+            // Left Hand Table
+            pw.Text("2. Left hand Table",
+                style:
+                    pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+            pw.TableHelper.fromTextArray(
+              headers: [
+                "ID",
+                "Date",
+                "Trial 1 (Kg)",
+                "Trial 2 (Kg)",
+                "Trial 3 (Kg)",
+                "Average"
+              ],
+              data: [
+                ["60", "2024-09-23", "3.230", "2.337", "-", "2.784"],
+                ["56", "2024-09-23", "1.670", "1.646", "-", "1.658"],
+              ],
+              headerDecoration: pw.BoxDecoration(
+                color: customBlue, // Custom blue background for header
+              ),
+              border: pw.TableBorder.all(width: 1, color: PdfColors.black),
+            ),
+            pw.SizedBox(height: 20),
 
-              pw.SizedBox(height: 20),
-
-              pw.Text("Left Hand Graph", style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
-              if (graphImage != null) pw.Image(pw.MemoryImage(graphImage), width: double.infinity, height: 100),
-            ],
-          ),
+            // Latest Test Difference Table
+            pw.Text("3. Latest Test Difference",
+                style:
+                    pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+            pw.TableHelper.fromTextArray(
+              headers: ["Right Hand", "Left Hand", "Difference"],
+              data: [
+                ["3.93", "2.38", "-1.55"],
+              ],
+              headerDecoration: pw.BoxDecoration(
+                color: customBlue, // Custom blue background for header
+              ),
+              border: pw.TableBorder.all(width: 1, color: PdfColors.black),
+            ),
+            pw.SizedBox(height: 20),
+          ],
         ),
-      );
-      await Printing.layoutPdf(
-        onLayout: (PdfPageFormat format) async => pdf.save(),
-      );
-    });
+      ),
+    );
+
+    // Second page - All the graphs
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text("4. Graph",
+                style:
+                    pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+            pw.Image(pw.MemoryImage(tableImage),
+                width: double.infinity, height: 200),
+            pw.SizedBox(height: 20),
+            pw.Text("5. Latest Test Graph",
+                style:
+                    pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+            pw.Image(pw.MemoryImage(graphImage),
+                width: double.infinity, height: 200),
+          ],
+        ),
+      ),
+    );
+
+    // Generate the PDF
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) async => pdf.save(),
+    );
+  }
+
+  Future<Uint8List> imageFromAssetBundle(String path) async {
+    final byteData = await rootBundle.load(path);
+    return byteData.buffer.asUint8List();
   }
 
   Future<Uint8List?> _captureWidgetAsImage(GlobalKey key) async {
     try {
-      RenderRepaintBoundary boundary = key.currentContext?.findRenderObject() as RenderRepaintBoundary;
+      RenderRepaintBoundary boundary =
+          key.currentContext?.findRenderObject() as RenderRepaintBoundary;
       ui.Image image = await boundary.toImage(pixelRatio: 2.0);
-      ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      ByteData? byteData =
+          await image.toByteData(format: ui.ImageByteFormat.png);
       return byteData?.buffer.asUint8List();
     } catch (e) {
       print("Error capturing image: $e");
@@ -146,7 +254,8 @@ class _AssessmentHistoryPageState extends State<AssessmentHistoryPage> with Sing
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Right Hand Table", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text("Right Hand Table",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           DataTable(
             columns: const [
               DataColumn(label: Text("ID")),
@@ -162,7 +271,8 @@ class _AssessmentHistoryPageState extends State<AssessmentHistoryPage> with Sing
             ],
           ),
           const SizedBox(height: 20),
-          const Text("Left Hand Table", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text("Left Hand Table",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           DataTable(
             columns: const [
               DataColumn(label: Text("ID")),
@@ -183,7 +293,8 @@ class _AssessmentHistoryPageState extends State<AssessmentHistoryPage> with Sing
             ],
           ),
           const SizedBox(height: 20),
-          const Text("Latest Test", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text("Latest Test",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           DataTable(
             columns: const [
               DataColumn(label: Text("RH")),
@@ -210,7 +321,8 @@ class _AssessmentHistoryPageState extends State<AssessmentHistoryPage> with Sing
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Right Hand Graph", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text("Right Hand Graph",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             RepaintBoundary(
               key: _graph1Key,
               child: SizedBox(
@@ -234,7 +346,8 @@ class _AssessmentHistoryPageState extends State<AssessmentHistoryPage> with Sing
               ),
             ),
             const SizedBox(height: 20),
-            const Text("Latest Test Graph", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text("Latest Test Graph",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             RepaintBoundary(
               key: _graph2Key,
               child: SizedBox(
@@ -267,7 +380,8 @@ class KeepAliveWidget extends StatefulWidget {
   _KeepAliveWidgetState createState() => _KeepAliveWidgetState();
 }
 
-class _KeepAliveWidgetState extends State<KeepAliveWidget> with AutomaticKeepAliveClientMixin {
+class _KeepAliveWidgetState extends State<KeepAliveWidget>
+    with AutomaticKeepAliveClientMixin {
   @override
   Widget build(BuildContext context) {
     super.build(context);
